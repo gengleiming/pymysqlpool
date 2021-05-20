@@ -1,3 +1,8 @@
+# Installation
+```shell script
+pip install pymysqlpool
+```
+
 # Create Mysql Pool
 ```python
 from pymysqlpool.pooled_db import PooledDB
