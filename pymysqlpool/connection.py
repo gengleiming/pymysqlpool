@@ -211,94 +211,84 @@ class Cursor:
                 pass
             self._closed = True
 
-    def _get_tough_method(self, name):
-        def tough_method(*args, **kwargs):
-            con = self._con
-            transaction = con._transaction
+    def execute(self, *args, **kwargs):
+        con = self._con
+        transaction = con._transaction
+        if not transaction:
+            con.ping_check()
+        try:
+            result = self._cursor.execute(*args, **kwargs)
+        except con._failures as error:
             if not transaction:
-                con.ping_check()
-            try:
-                method = getattr(self._cursor, name)
-                result = method(*args, **kwargs)
-            except con._failures as error:
-                if not transaction:
-                    try:
-                        cursor2 = con._cursor(*self._args, **self._kwargs)
-                    except Exception:
-                        pass
-                    else:
-                        try:
-                            method = getattr(cursor2, name)
-                            result = method(*args, **kwargs)
-                        except Exception:
-                            pass
-                        else:
-                            self.close()
-                            self._cursor = cursor2
-                            return result
-                        try:
-                            cursor2.close()
-                        except Exception:
-                            pass
                 try:
-                    con2 = con._create()
+                    cursor2 = con._cursor(*self._args, **self._kwargs)
                 except Exception:
                     pass
                 else:
                     try:
-                        cursor2 = con2.cursor(
-                            *self._args, **self._kwargs)
+                        result = cursor2.execute(*args, **kwargs)
                     except Exception:
                         pass
                     else:
-                        if transaction:
-                            self.close()
-                            con.close()
-                            con.store(con2)
-                            self._cursor = cursor2
-                            raise error
-                        error2 = None
-                        try:
-                            method2 = getattr(cursor2, name)
-                            result = method2(*args, **kwargs)
-                        except error.__class__:
-                            use2 = False
-                            error2 = error
-                        except Exception as error:
-                            use2 = True
-                            error2 = error
-                        else:
-                            use2 = True
-                        if use2:
-                            self.close()
-                            con.close()
-                            con.store(con2)
-                            self._cursor = cursor2
-                            if error2:
-                                raise error2
-                            return result
-                        try:
-                            cursor2.close()
-                        except Exception:
-                            pass
+                        self.close()
+                        self._cursor = cursor2
+                        return result
                     try:
-                        con2.close()
+                        cursor2.close()
                     except Exception:
                         pass
-                if transaction:
-                    self._transaction = False
-                raise error
+            try:
+                con2 = con._create()
+            except Exception:
+                pass
             else:
-                return result
-
-        return tough_method
+                try:
+                    cursor2 = con2.cursor(*self._args, **self._kwargs)
+                except Exception:
+                    pass
+                else:
+                    if transaction:
+                        self.close()
+                        con.close()
+                        con.store(con2)
+                        self._cursor = cursor2
+                        raise error
+                    error2 = None
+                    try:
+                        result = cursor2.execute(*args, **kwargs)
+                    except error.__class__:
+                        use2 = False
+                        error2 = error
+                    except Exception as error:
+                        use2 = True
+                        error2 = error
+                    else:
+                        use2 = True
+                    if use2:
+                        self.close()
+                        con.close()
+                        con.store(con2)
+                        self._cursor = cursor2
+                        if error2:
+                            raise error2
+                        return result
+                    try:
+                        cursor2.close()
+                    except Exception:
+                        pass
+                try:
+                    con2.close()
+                except Exception:
+                    pass
+            if transaction:
+                self._transaction = False
+            raise error
+        else:
+            return result
 
     def __getattr__(self, name):
         if self._cursor:
-            if name.startswith(('execute', 'call')):
-                return self._get_tough_method(name)
-            else:
-                return getattr(self._cursor, name)
+            return getattr(self._cursor, name)
         else:
             raise InvalidCursor
 
