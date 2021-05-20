@@ -8,10 +8,10 @@ setuptools.setup(
     version="0.0.1",
     author="gengleiming",
     author_email="244277947@qq.com",
+    install_requires=[],
     description="db pool for pymysql",
     long_description=long_description,
     long_description_content_type="text/markdown",
-    url="https://github.com/kormay/pymysqlpool",
     packages=setuptools.find_packages(),
     classifiers=[
         "Programming Language :: Python :: 3",
