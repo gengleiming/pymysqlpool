@@ -4,7 +4,7 @@ with open("README.md", "r") as fh:
     long_description = fh.read()
 
 setuptools.setup(
-    name="pymysqlpool",
+    name="pymysql-dbpool",
     version="0.0.1",
     author="gengleiming",
     author_email="244277947@qq.com",
