@@ -1,3 +1,4 @@
+# Installation
 ```shell script
 pip install pymysql-dbpool
 ```
