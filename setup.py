@@ -7,7 +7,7 @@ setuptools.setup(
     name="pymysqlpool",
     version="0.0.1",
     author="gengleiming",
-    author_email="244277947@example.com",
+    author_email="244277947@qq.com",
     description="db pool for pymysql",
     long_description=long_description,
     long_description_content_type="text/markdown",

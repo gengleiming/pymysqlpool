@@ -1,4 +1,9 @@
-# 创建连接池
+# Installation
+```shell script
+pip install pymysqlpool
+```
+
+# Create Mysql Pool
 ```python
 from pymysqlpool.pooled_db import PooledDB
 
@@ -14,7 +19,7 @@ pool = PooledDB(
     charset="utf8"
 )
 ```
-# 执行sql语句
+# Execute sql command
 ### select
 ```python
 conn = pool.connect()
