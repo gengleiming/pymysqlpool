@@ -15,7 +15,7 @@ class TooManyConnections(PoolError):
     pass
 
 
-class PooledDB:
+class DBPool:
     def __init__(self, max_connections=0, set_session=None, reset=True, ping=1, *args, **kwargs):
         """
 
@@ -53,9 +53,7 @@ class PooledDB:
                 self._wait_lock()
             if not self._idle_cache:
                 import time
-                start = time.time()
                 con = self.connection()
-                end = time.time()
             else:
                 con = self._idle_cache.pop(0)
                 con.ping_check()

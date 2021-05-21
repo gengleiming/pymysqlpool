@@ -1,16 +1,16 @@
 import pymysql
 
-from pymysqlpool.pooled_db import PooledDB
+from pymysqlpool.dbpool import DBPool
 
-pool = PooledDB(
+pool = DBPool(
     max_connections=10,  # 连接池允许的最大连接数，0和None表示不限制连接数
     set_session=[f'SET time_zone = "+8:00"', 'SET autocommit=1'],  # 开始会话前执行的命令列表。如：["set datestyle to …", "set time zone …"]
     ping=1,  # ping 探活。 0=None=never, 1=default=requested,2=cursor created, 4=query executed,7=always
-    host="localhost",
-    port=3306,
+    host="192.168.12.86",
+    port=30000,
     user="root",
-    password="admin",
-    database="testdb",
+    password="introcks1234",
+    database="vesion_book_console",
     charset="utf8"
 )
 

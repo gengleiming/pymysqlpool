@@ -5,7 +5,7 @@ pip install pymysql-dbpool
 
 # Create Mysql Pool
 ```python
-from pymysqlpool.pooled_db import PooledDB
+from pymysqlpool.dbpool import DBPool
 
 pool = PooledDB(
     max_connections=10,  # 连接池允许的最大连接数，0和None表示不限制连接数
