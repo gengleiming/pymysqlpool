@@ -43,7 +43,7 @@ class DBPool:
         self._lock = Condition()
         self._connections = 0
 
-    def connection(self):
+    def _connection(self):
         return Connection(self._set_session, self._ping, *self._args, **self._kwargs)
 
     def connect(self):
@@ -52,8 +52,7 @@ class DBPool:
             while self._max_connections and self._connections >= self._max_connections:
                 self._wait_lock()
             if not self._idle_cache:
-                import time
-                con = self.connection()
+                con = self._connection()
             else:
                 con = self._idle_cache.pop(0)
                 con.ping_check()
@@ -98,7 +97,6 @@ class DBPool:
 class WorkConnection:
 
     def __init__(self, pool, con):
-        self._con = None
         self._pool = pool
         self._con = con
 

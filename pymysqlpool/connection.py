@@ -11,7 +11,7 @@ class InvalidCursor(SteadyDBError):
 
 class Connection:
     def __init__(self, set_session=None, ping=1, *args, **kwargs):
-        self._con = None
+        self._work_con = None
         self._closed = True
         self._transaction = False
 
@@ -44,7 +44,7 @@ class Connection:
 
     def _set_session(self, con=None):
         if con is None:
-            con = self._con
+            con = self._work_con
         if self._set_session_sql:
             cursor = con.cursor()
             for sql in self._set_session_sql:
@@ -52,14 +52,14 @@ class Connection:
             cursor.close()
 
     def store(self, con):
-        self._con = con
+        self._work_con = con
         self._transaction = False
         self._closed = False
 
     def close(self):
         if not self._closed:
             try:
-                self._con.close()
+                self._work_con.close()
             except Exception:
                 pass
             self._transaction = False
@@ -77,7 +77,7 @@ class Connection:
             return
 
         try:
-            alive = self._con.ping(False)
+            alive = self._work_con.ping(False)
         except pymysql.err.Error:
             alive = False
         except Exception:
@@ -101,12 +101,12 @@ class Connection:
 
     def begin(self, *args, **kwargs):
         self._transaction = True
-        self._con.begin(*args, **kwargs)
+        self._work_con.begin(*args, **kwargs)
 
     def commit(self):
         self._transaction = False
         try:
-            self._con.commit()
+            self._work_con.commit()
         except self._failures as error:
             try:
                 con = self._create()
@@ -120,7 +120,7 @@ class Connection:
     def rollback(self):
         self._transaction = False
         try:
-            self._con.rollback()
+            self._work_con.rollback()
         except self._failures as error:
             try:
                 con = self._create()
@@ -134,21 +134,21 @@ class Connection:
     def cancel(self):
         self._transaction = False
         try:
-            cancel = self._con.cancel
+            cancel = self._work_con.cancel
         except AttributeError:
             pass
         else:
             cancel()
 
     def ping(self, *args, **kwargs):
-        return self._con.ping(*args, **kwargs)
+        return self._work_con.ping(*args, **kwargs)
 
     def _cursor(self, *args, **kwargs):
         transaction = self._transaction
         if not transaction:
             self.ping_check()
         try:
-            cursor = self._con.cursor(*args, **kwargs)
+            cursor = self._work_con.cursor(*args, **kwargs)
         except self._failures as error:
             try:
                 con = self._create()
