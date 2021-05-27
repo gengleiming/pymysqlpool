@@ -47,8 +47,7 @@ class DBPool:
         return Connection(self._set_session, self._ping, *self._args, **self._kwargs)
 
     def connect(self):
-        self._lock.acquire()
-        try:
+        with self._lock:
             while self._max_connections and self._connections >= self._max_connections:
                 self._wait_lock()
             if not self._idle_cache:
@@ -59,30 +58,22 @@ class DBPool:
 
             con = WorkConnection(self, con)
             self._connections += 1
-        finally:
-            self._lock.release()
         return con
 
     def cache(self, con):
-        self._lock.acquire()
-        try:
+        with self._lock:
             con.reset(force=self._reset)
             self._idle_cache.append(con)
             self._connections -= 1
             self._lock.notify()
-        finally:
-            self._lock.release()
 
     def close(self):
-        self._lock.acquire()
-        try:
+        with self._lock:
             while self._idle_cache:
                 con = self._idle_cache.pop(0)
                 con.close()
 
             self._lock.notifyAll()
-        finally:
-            self._lock.release()
 
     def __del__(self):
         try:
